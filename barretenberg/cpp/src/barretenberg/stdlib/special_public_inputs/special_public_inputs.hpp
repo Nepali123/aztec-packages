@@ -188,9 +188,8 @@ using AppIO = DefaultIO<MegaCircuitBuilder>; // app IO is always Mega
 /**
  * @brief The data that is propagated on the public inputs of the inner GoblinAvmRecursiveVerifier circuit
  */
-class GoblinAvmIO {
+template <class Builder> class GoblinAvmIO {
   public:
-    using Builder = UltraCircuitBuilder;  // builder is always Ultra
     using Curve = stdlib::bn254<Builder>; // curve is always bn254
     using FF = Curve::ScalarField;
     using PairingInputs = stdlib::recursion::PairingPoints<Builder>;

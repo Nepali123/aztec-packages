@@ -198,7 +198,7 @@ UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_
     output.points_accumulator = inputs.pairing_inputs;
     if constexpr (std::is_same_v<IO, HidingKernelIO<Builder>>) {
         output.ecc_op_tables = inputs.ecc_op_tables;
-    } else if constexpr (std::is_same_v<IO, GoblinAvmIO>) {
+    } else if constexpr (std::is_same_v<IO, GoblinAvmIO<Builder>>) {
         output.mega_inputs_hash = inputs.mega_inputs_hash;
     }
 
@@ -229,9 +229,10 @@ template UltraRecursiveVerifier_<bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>
 
 // GoblinAvm specialization
 template UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
-    bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::verify_proof<GoblinAvmIO>(const HonkProof& proof);
+    bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::verify_proof<GoblinAvmIO<UltraCircuitBuilder>>(const HonkProof&
+                                                                                                       proof);
 template UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
     bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::
-    verify_proof<GoblinAvmIO>(
+    verify_proof<GoblinAvmIO<UltraCircuitBuilder>>(
         const UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::StdlibProof& proof);
 } // namespace bb::stdlib::recursion::honk

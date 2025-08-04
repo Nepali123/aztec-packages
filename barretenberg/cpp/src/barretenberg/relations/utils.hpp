@@ -113,13 +113,10 @@ template <typename Flavor> class RelationUtils {
      * @param tuple_1 First nested tuple summand. Result stored here
      * @param tuple_2 Second summand
      */
-    template <typename Tuple, std::size_t Index = 0>
-    static constexpr void add_nested_tuples(Tuple& tuple_1, const Tuple& tuple_2)
+    template <typename Tuple> static constexpr void add_nested_tuples(Tuple& tuple_1, const Tuple& tuple_2)
     {
-        if constexpr (Index < std::tuple_size<Tuple>::value) {
-            add_tuples(std::get<Index>(tuple_1), std::get<Index>(tuple_2));
-            add_nested_tuples<Tuple, Index + 1>(tuple_1, tuple_2);
-        }
+        constexpr_for<0, std::tuple_size_v<Tuple>, 1>(
+            [&]<size_t Index>() { add_tuples(std::get<Index>(tuple_1), std::get<Index>(tuple_2)); });
     }
 
     /**

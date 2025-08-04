@@ -31,35 +31,6 @@ template <typename Builder> struct UltraRecursiveVerifierOutput {
     std::array<G1, Builder::NUM_WIRES> ecc_op_tables; // Ecc op tables' commitments as extracted from the public inputs
                                                       // of the HidingKernel, only for MegaFlavor
     FF mega_inputs_hash; // Hash of the mega inputs used by the inner circuit in the GoblinAvmRecursiveVerifier
-
-    UltraRecursiveVerifierOutput() = default;
-
-    /**
-     * @brief Construct a new Ultra Recursive Verifier Output object from the reconstructed public inputs
-     *
-     * @tparam IO, the public input class
-     * @param inputs
-     */
-    template <class IO> UltraRecursiveVerifierOutput(const IO& inputs)
-    {
-        UltraRecursiveVerifierOutput output;
-
-        // Add the pairing inputs
-        output.points_accumulator = inputs.pairing_inputs;
-
-        if constexpr (std::is_same_v<IO, RollupIO>) {
-            // Add ipa claim
-            output.ipa_claim = inputs.ipa_claim;
-        } else if constexpr (std::is_same_v<IO, HidingKernelIO<Builder>>) {
-            // Add ecc op tables
-            output.ecc_op_tables = inputs.ecc_op_tables;
-        } else if constexpr (std::is_same_v<IO, GoblinAvmIO>) {
-            // Add mega inputs hash
-            output.mega_inputs_hash = inputs.mega_inputs_hash;
-        }
-
-        return output;
-    }
 };
 
 template <typename Flavor> class UltraRecursiveVerifier_ {
@@ -77,30 +48,23 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
     using OinkVerifier = OinkRecursiveVerifier_<Flavor>;
     using Output = UltraRecursiveVerifierOutput<Builder>;
     using StdlibProof = stdlib::Proof<Builder>;
-    using IO_ = std::conditional_t<HasIPAAccumulator<Flavor>,
-                                   RollupIO, // If HasIPAAccumulator, it is a rollup circuit
-                                   std::conditional_t<(!IsMegaFlavor<Flavor>),
-                                                      DefaultIO<Builder>, // If it is not mega, we use default IOs
-                                                      void>>;             // Else, IOs must be specified
+    using PairingPoints = PairingPoints<Builder>;
 
     explicit UltraRecursiveVerifier_(Builder* builder,
                                      const std::shared_ptr<VKAndHash>& vk_and_hash,
                                      const std::shared_ptr<Transcript>& transcript = std::make_shared<Transcript>());
 
-    template <class IO = std::conditional_t<HasIPAAccumulator<Flavor>,
-                                            RollupIO, // If HasIPAAccumulator, it is a rollup circuit
-                                            std::conditional_t<(!IsMegaFlavor<Flavor>),
-                                                               DefaultIO<Builder>, // If it is not mega, we use default
-                                                                                   // IOs
-                                                               void>>>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof);
-    template <class IO = std::conditional_t<HasIPAAccumulator<Flavor>,
-                                            RollupIO, // If HasIPAAccumulator, it is a rollup circuit
-                                            std::conditional_t<(!IsMegaFlavor<Flavor>),
-                                                               DefaultIO<Builder>, // If it is not mega, we use default
-                                                                                   // IOs
-                                                               void>>>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
+        requires(!IsMegaFlavor<Flavor>);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
+        requires(!IsMegaFlavor<Flavor>);
+
+    template <class IO>
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
+        requires(IsMegaFlavor<Flavor>);
+    template <class IO>
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
+        requires(IsMegaFlavor<Flavor>);
 
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1364): Improve VKs. Clarify the usage of
     // RecursiveDeciderVK here. Seems unnecessary.
@@ -108,6 +72,9 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
     VerifierCommitmentKey pcs_verification_key;
     Builder* builder;
     std::shared_ptr<Transcript> transcript;
+
+  private:
+    std::tuple<PairingPoints, StdlibProof, std::vector<FF>> verify_internal(const StdlibProof& proof);
 };
 
 } // namespace bb::stdlib::recursion::honk

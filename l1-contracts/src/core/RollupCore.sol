@@ -68,15 +68,19 @@ import {FeeConfigLib, CompressedFeeConfig} from "@aztec/core/libraries/compresse
  *         They form the pool from which committee members and proposers are selected.
  *
  *      2) Committee Members: Drafted from the validator set and remain stable throughout an epoch.
- *         A block requires 2/3rds of the committee for the epoch to be considered valid. These attestations serve two purposes:
- *         - Attest to data availability for transaction data not posted on L1, which is required by provers to generate epoch proofs
- *         - Re-execute everything and attest to the resulting state root, acting as training wheels for the proving system
+ *         A block requires 2/3rds of the committee for the epoch to be considered valid. These attestations serve two
+ *         purposes:
+ *         - Attest to data availability for transaction data not posted on L1, which is required by provers to generate
+ *           epoch proofs
+ *         - Re-execute everything and attest to the resulting state root, acting as training wheels for the proving
+ *           system
  *
- *      3) Proposers: Drafted from the validator set (currently proposers are part of the committee for the epoch, though this may change).
- *         They have exclusive rights to propose a block at a given slot, ensuring orderly block production without competition.
+ *      3) Proposers: Drafted from the validator set (currently proposers are part of the committee for the epoch,
+ *         though this may change). They have exclusive rights to propose a block at a given slot, ensuring orderly
+ *         block production without competition.
  *
- *      4) Provers: Generate validity proofs for the state transitions of blocks in an epoch. No need to stake to be a prover.
- *         They have access to large amounts of compute.
+ *      4) Provers: Generate validity proofs for the state transitions of blocks in an epoch. No need to stake to be a
+ *         prover. They have access to large amounts of compute.
  *
  * @dev Block Building Flow
  *
@@ -110,31 +114,36 @@ import {FeeConfigLib, CompressedFeeConfig} from "@aztec/core/libraries/compresse
  *      - Attestations in blocks are not validated on-chain to save gas. Since attestations are still posted to L1,
  *        nodes are expected to verify them off-chain, and skip a block if its attestations are invalid.
  *      - If a block has invalid attestation signatures, anyone can call `invalidateBadAttestation()`
- *      - If a block has insufficient valid attestations (< 2/3 of committee), anyone can call `invalidateInsufficientAttestations()`
+ *      - If a block has insufficient valid attestations (< 2/3 of committee), anyone can call
+ *        `invalidateInsufficientAttestations()`
  *      - While anyone can call invalidation functions, it is expected that the next proposer will do so, and if they
  *        fail to do so, then other committee members do, and if they fail to do so, then any validator will do so.
- *      - Upon invalidation, the invalid block and all subsequent blocks are removed from the chain, so the pending chain tip
- *        reverts to the block immediately before the invalid one.
+ *      - Upon invalidation, the invalid block and all subsequent blocks are removed from the chain, so the pending
+ *        chain tip reverts to the block immediately before the invalid one.
  *       - Note that only unproven blocks can be invalidated, as proven blocks are final and cannot be reverted.
  *
  *      Unhappy path for missing proofs:
  *      - Each epoch has a proof submission window (configured via aztecProofSubmissionEpochs).
  *      - If no proof is submitted within the window, it is assumed that the epoch cannot be proven due to missing data,
- *        so all blocks in the epoch are pruned. This is done by calling `prune()` manually, or automatically on the next proposal.
- *      - The committee for the epoch is expected to disseminate transaction data to allow proving, so a prune is considered a slashable offense,
+ *        so all blocks in the epoch are pruned. This is done by calling `prune()` manually, or automatically on the
+ *        next proposal.
+ *      - The committee for the epoch is expected to disseminate transaction data to allow proving, so a prune is
+ *        considered a slashable offense,
  *        that causes validators to vote for slashing the committee of the unproven epoch.
- *      - When the pending chain is pruned, all unproven blocks are removed from the pending chain, and the chain resumes from the last proven block.
+ *      - When the pending chain is pruned, all unproven blocks are removed from the pending chain, and the chain
+ *        resumes from the last proven block.
  *
  * @dev Slashing Mechanism
  *
- *      Slashing is a critical security mechanism that penalizes validators who misbehave or fail to fulfill their duties.
- *      The slashing process is governance-based and operates through a voting mechanism:
+ *      Slashing is a critical security mechanism that penalizes validators who misbehave or fail to fulfill their
+ *      duties. The slashing process is governance-based and operates through a voting mechanism:
  *
  *      - When nodes detect validator misbehavior, they create a proposal for slashing the offending validators
  *      - The proposal is submitted to the slashing contract and enters a voting period
  *      - Each block proposer votes on the slashing proposal during their assigned slot
  *      - If the proposal receives sufficient votes (reaches the configured quorum), it passes
- *      - Once approved, the offending validators are slashed, meaning their staked assets are reduced by the slashing amount
+ *      - Once approved, the offending validators are slashed, meaning their staked assets are reduced by the slashing
+ *        amount
  *      - If a validator's stake falls below the minimum required amount due to slashing, they are automatically
  *        removed from the validator set
  *
@@ -305,11 +314,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @dev Only callable by owner. This affects how proving costs are calculated in the fee model.
    * @param _provingCostPerMana The cost in ETH per unit of mana for proving
    */
-  function setProvingCostPerMana(EthValue _provingCostPerMana)
-    external
-    override(IRollupCore)
-    onlyOwner
-  {
+  function setProvingCostPerMana(EthValue _provingCostPerMana) external override(IRollupCore) onlyOwner {
     FeeLib.updateProvingCostPerMana(_provingCostPerMana);
   }
 
@@ -318,11 +323,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @dev Only callable by owner. Controls how validators enter the active set.
    * @param _config New configuration including queue size limits and timing parameters
    */
-  function updateStakingQueueConfig(StakingQueueConfig memory _config)
-    external
-    override(IStakingCore)
-    onlyOwner
-  {
+  function updateStakingQueueConfig(StakingQueueConfig memory _config) external override(IStakingCore) onlyOwner {
     ExtRollupLib2.updateStakingQueueConfig(_config);
   }
 
@@ -332,11 +333,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @param _recipient The address to receive the rewards
    * @return The amount of rewards claimed
    */
-  function claimSequencerRewards(address _recipient)
-    external
-    override(IRollupCore)
-    returns (uint256)
-  {
+  function claimSequencerRewards(address _recipient) external override(IRollupCore) returns (uint256) {
     require(isRewardsClaimable, Errors.Rollup__RewardsNotClaimable());
     return RewardLib.claimSequencerRewards(_recipient);
   }
@@ -374,10 +371,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @param _withdrawer The address that can withdraw the stake
    * @param _moveWithLatestRollup Whether to follow the chain if a fork occurs
    */
-  function deposit(address _attester, address _withdrawer, bool _moveWithLatestRollup)
-    external
-    override(IStakingCore)
-  {
+  function deposit(address _attester, address _withdrawer, bool _moveWithLatestRollup) external override(IStakingCore) {
     ExtRollupLib2.deposit(_attester, _withdrawer, _moveWithLatestRollup);
   }
 
@@ -399,11 +393,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @param _recipient The address to receive the withdrawn stake
    * @return True if withdrawal was initiated, false if already initiated
    */
-  function initiateWithdraw(address _attester, address _recipient)
-    external
-    override(IStakingCore)
-    returns (bool)
-  {
+  function initiateWithdraw(address _attester, address _recipient) external override(IStakingCore) returns (bool) {
     return ExtRollupLib2.initiateWithdraw(_attester, _recipient);
   }
 
@@ -444,10 +434,7 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    *      Successful submission triggers prover rewards.
    * @param _args Contains the epoch range, public inputs, fees, attestations, and the ZK proof
    */
-  function submitEpochRootProof(SubmitEpochRootProofArgs calldata _args)
-    external
-    override(IRollupCore)
-  {
+  function submitEpochRootProof(SubmitEpochRootProofArgs calldata _args) external override(IRollupCore) {
     ExtRollupLib.submitEpochRootProof(_args);
   }
 
@@ -510,7 +497,8 @@ contract RollupCore is EIP712("Aztec Rollup", "1"), Ownable, IStakingCore, IVali
    * @dev Can be called by anyone at the start of an epoch. Samples the committee
    *      and determines proposers for all slots in the epoch. Automatically called
    *      during `propose`.
-   * @custom:question Is there any reason for this being external other than testing, or to setup an epoch if there were no block proposals?
+   * @custom:question Is there any reason for this being external other than testing, or to setup an epoch if there were
+   * no block proposals?
    */
   function setupEpoch() public override(IValidatorSelectionCore) {
     ExtRollupLib2.setupEpoch();

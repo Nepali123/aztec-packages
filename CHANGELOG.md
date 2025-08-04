@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/AztecProtocol/aztec-packages/compare/v1.2.1...v1.2.2) (2025-08-04)
+
+
+### Miscellaneous
+
+* **docs:** update master with changes from 16163 ([#16168](https://github.com/AztecProtocol/aztec-packages/issues/16168)) ([126cbf5](https://github.com/AztecProtocol/aztec-packages/commit/126cbf57162d91f9063c1498490293a65dded9fe))
+
 ## [1.2.1](https://github.com/AztecProtocol/aztec-packages/compare/v1.2.0...v1.2.1) (2025-07-31)
 
 

@@ -85,9 +85,7 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
             builder.create_big_add_gate({ a_idx, b_idx, c_idx, d_idx, fr(1), fr(1), fr(1), fr(-1), fr(0) });
         }
 
-        if constexpr (IsMegaBuilder<InnerBuilder>) {
-            HidingKernelIO<InnerBuilder>::add_default(builder);
-        } else if constexpr (HasIPAAccumulator<RecursiveFlavor>) {
+        if constexpr (HasIPAAccumulator<RecursiveFlavor>) {
             RollupIO::add_default(builder);
         } else {
             DefaultIO<InnerBuilder>::add_default(builder);
@@ -168,7 +166,13 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
                 std::make_shared<typename RecursiveFlavor::VKAndHash>(outer_circuit, verification_key);
             RecursiveVerifier verifier{ &outer_circuit, stdlib_vk_and_hash };
 
-            typename RecursiveVerifier::Output verifier_output = verifier.verify_proof(inner_proof);
+            typename RecursiveVerifier::Output verifier_output;
+            if constexpr (IsUltraHonk<InnerFlavor>) {
+                verifier_output = verifier.verify_proof(inner_proof);
+            } else {
+                using IO = DefaultIO<OuterBuilder>;
+                verifier_output = verifier.template verify_proof<IO>(inner_proof);
+            }
             verifier_output.points_accumulator.set_public();
             if constexpr (HasIPAAccumulator<OuterFlavor>) {
                 verifier_output.ipa_claim.set_public();
@@ -211,15 +215,12 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
         RecursiveVerifier verifier{ &outer_circuit, stdlib_vk_and_hash };
         verifier.transcript->enable_manifest();
 
-        VerifierOutput output = verifier.verify_proof(inner_proof);
+        VerifierOutput output;
 
-        // IO
-        if constexpr (IsMegaFlavor<OuterFlavor>) {
-            HidingKernelIO<OuterBuilder> inputs;
-            inputs.pairing_inputs = output.points_accumulator;
-            inputs.ecc_op_tables = HidingKernelIO<OuterBuilder>::default_ecc_op_tables(outer_circuit);
-            inputs.set_public();
-        } else if constexpr (HasIPAAccumulator<OuterFlavor>) {
+        // IO: the inner circuit has public inputs that depend on RecursiveFlavor
+        if constexpr (HasIPAAccumulator<RecursiveFlavor>) {
+            output = verifier.verify_proof(inner_proof);
+
             // HasIPAAccumulator requires RollUpIO
             RollupIO inputs;
             inputs.pairing_inputs = output.points_accumulator;
@@ -229,7 +230,15 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
             // Store ipa_proof
             outer_circuit.ipa_proof = output.ipa_proof.get_value();
         } else {
-            DefaultIO<OuterBuilder> inputs;
+            using IO = DefaultIO<OuterBuilder>;
+
+            if constexpr (IsUltraHonk<InnerFlavor>) {
+                output = verifier.verify_proof(inner_proof);
+            } else {
+                output = verifier.template verify_proof<IO>(inner_proof);
+            };
+
+            IO inputs;
             inputs.pairing_inputs = output.points_accumulator;
             inputs.set_public();
         }
@@ -354,6 +363,7 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
         requires(IsAnyOf<InnerFlavor, MegaZKFlavor, MegaFlavor>)
 
     {
+        using IO = DefaultIO<OuterBuilder>;
         for (size_t idx = 0; idx < 2; idx++) {
             // Create an arbitrary inner circuit
             auto inner_circuit = create_inner_circuit();
@@ -374,7 +384,7 @@ template <typename RecursiveFlavor> class RecursiveVerifierTest : public testing
             auto stdlib_vk_and_hash =
                 std::make_shared<typename RecursiveFlavor::VKAndHash>(outer_circuit, inner_verification_key);
             RecursiveVerifier verifier{ &outer_circuit, stdlib_vk_and_hash };
-            VerifierOutput output = verifier.verify_proof(inner_proof);
+            VerifierOutput output = verifier.template verify_proof<IO>(inner_proof);
 
             if (idx == 0) {
                 // We expect the circuit check to fail due to the bad proof.

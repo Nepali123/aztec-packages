@@ -60,11 +60,9 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
         requires(!IsMegaFlavor<Flavor>);
 
     template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
-        requires(IsMegaFlavor<Flavor>);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof);
     template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
-        requires(IsMegaFlavor<Flavor>);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof);
 
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1364): Improve VKs. Clarify the usage of
     // RecursiveDeciderVK here. Seems unnecessary.

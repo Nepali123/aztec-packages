@@ -48,21 +48,20 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
     using OinkVerifier = OinkRecursiveVerifier_<Flavor>;
     using Output = UltraRecursiveVerifierOutput<Builder>;
     using StdlibProof = stdlib::Proof<Builder>;
-    using PairingPoints = PairingPoints<Builder>;
 
     explicit UltraRecursiveVerifier_(Builder* builder,
                                      const std::shared_ptr<VKAndHash>& vk_and_hash,
                                      const std::shared_ptr<Transcript>& transcript = std::make_shared<Transcript>());
 
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
-        requires(!IsMegaFlavor<Flavor>);
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
-        requires(!IsMegaFlavor<Flavor>);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof);
 
     template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
+        requires(IsMegaFlavor<Flavor>);
     template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof);
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
+        requires(IsMegaFlavor<Flavor>);
 
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1364): Improve VKs. Clarify the usage of
     // RecursiveDeciderVK here. Seems unnecessary.
@@ -72,7 +71,7 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
     std::shared_ptr<Transcript> transcript;
 
   private:
-    std::tuple<PairingPoints, StdlibProof, std::vector<FF>> verify_internal(const StdlibProof& proof);
+    std::tuple<PairingObject, StdlibProof, std::vector<FF>> verify_internal(const StdlibProof& proof);
 };
 
 } // namespace bb::stdlib::recursion::honk

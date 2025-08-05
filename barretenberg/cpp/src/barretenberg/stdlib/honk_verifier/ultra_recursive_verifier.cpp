@@ -121,7 +121,8 @@ UltraRecursiveVerifier_<Flavor>::verify_internal(const stdlib::Proof<Builder>& p
 /**
  * @brief This function constructs a recursive verifier circuit for a native Ultra Honk proof of a given flavor
  *
- * @details This function infers the type of public inputs from the Flavor
+ * @details This function infers the type of public inputs from the Flavor: either RollupIO if
+ * HasIPAAccumulator<Flavor>, or DefaultIO
  *
  * @return Output aggregation object
  */
@@ -135,7 +136,8 @@ UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_
 /**
  * @brief This function constructs a recursive verifier circuit for a native Ultra Honk proof of a given flavor.
  *
- * @details This function infers the type of public inputs from the Flavor
+ * @details This function infers the type of public inputs from the Flavor: either RollupIO if
+ * HasIPAAccumulator<Flavor>, or DefaultIO
  *
  * @return Output aggregation object
  */

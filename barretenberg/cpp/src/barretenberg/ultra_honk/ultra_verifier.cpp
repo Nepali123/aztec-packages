@@ -42,6 +42,9 @@ UltraVerifier_<Flavor>::verify_internal(const typename UltraVerifier_<Flavor>::P
 /**
  * @brief This function verifies an Ultra Honk proof for a given Flavor.
  *
+ * @details This function infers the public input type from the Flavor: either RollupIO if HasIPAAccumulator<Flavor>, or
+ * DefaultIO
+ *
  */
 template <typename Flavor>
 bool UltraVerifier_<Flavor>::verify_proof(const typename UltraVerifier_<Flavor>::Proof& proof,

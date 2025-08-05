@@ -57,10 +57,8 @@ template <typename Flavor> class UltraRecursiveVerifier_ {
     [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof);
 
     template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const HonkProof& proof)
-        requires(IsMegaFlavor<Flavor>);
-    template <class IO>
-    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof(const StdlibProof& proof)
+    [[nodiscard("IPA claim and Pairing points should be accumulated")]] Output verify_proof_with_io_type(
+        const StdlibProof& proof)
         requires(IsMegaFlavor<Flavor>);
 
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1364): Improve VKs. Clarify the usage of

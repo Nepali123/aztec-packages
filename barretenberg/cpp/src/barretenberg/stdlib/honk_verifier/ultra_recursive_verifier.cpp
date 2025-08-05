@@ -176,24 +176,7 @@ UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_
  */
 template <typename Flavor>
 template <class IO>
-UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_proof(const HonkProof& proof)
-    requires(IsMegaFlavor<Flavor>)
-{
-    StdlibProof stdlib_proof(*builder, proof);
-    return verify_proof<IO>(stdlib_proof);
-}
-
-/**
- * @brief This function constructs a recursive verifier circuit for a native Ultra Honk proof of a given Mega flavor.
- *
- * @details This function requires the explicit specification of the type of public inputs contained in the proof
- *
- * @tparam IO public inputs type
- * @return Output aggregation object
- */
-template <typename Flavor>
-template <class IO>
-UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_proof(
+UltraRecursiveVerifier_<Flavor>::Output UltraRecursiveVerifier_<Flavor>::verify_proof_with_io_type(
     const stdlib::Proof<Builder>& proof)
     requires(IsMegaFlavor<Flavor>)
 {
@@ -230,19 +213,13 @@ template class UltraRecursiveVerifier_<bb::MegaZKRecursiveFlavor_<UltraCircuitBu
 
 // ClientIVC specialization
 template UltraRecursiveVerifier_<bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
-    bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>>::verify_proof<HidingKernelIO<UltraCircuitBuilder>>(const HonkProof&
-                                                                                                            proof);
-template UltraRecursiveVerifier_<bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
     bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>>::
-    verify_proof<HidingKernelIO<UltraCircuitBuilder>>(
+    verify_proof_with_io_type<HidingKernelIO<UltraCircuitBuilder>>(
         const UltraRecursiveVerifier_<bb::MegaZKRecursiveFlavor_<UltraCircuitBuilder>>::StdlibProof& proof);
 
 // GoblinAvm specialization
 template UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
-    bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::verify_proof<GoblinAvmIO<UltraCircuitBuilder>>(const HonkProof&
-                                                                                                       proof);
-template UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::Output UltraRecursiveVerifier_<
     bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::
-    verify_proof<GoblinAvmIO<UltraCircuitBuilder>>(
+    verify_proof_with_io_type<GoblinAvmIO<UltraCircuitBuilder>>(
         const UltraRecursiveVerifier_<bb::MegaRecursiveFlavor_<UltraCircuitBuilder>>::StdlibProof& proof);
 } // namespace bb::stdlib::recursion::honk

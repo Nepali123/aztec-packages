@@ -24,7 +24,7 @@ ClientIVCRecursiveVerifier::Output ClientIVCRecursiveVerifier::verify(const Stdl
 
     // Perform recursive decider verification
     MegaVerifier verifier{ builder.get(), stdlib_mega_vk_and_hash, civc_rec_verifier_transcript };
-    MegaVerifier::Output mega_output = verifier.verify_proof<IO>(proof.mega_proof);
+    MegaVerifier::Output mega_output = verifier.template verify_proof_with_io_type<IO>(proof.mega_proof);
 
     // Perform Goblin recursive verification
     GoblinVerificationKey goblin_verification_key{};

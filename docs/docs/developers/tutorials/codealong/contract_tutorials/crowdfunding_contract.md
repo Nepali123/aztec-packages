@@ -191,7 +191,7 @@ You should be able to compile successfully with `aztec-nargo compile`.
 For comparison, the full Crowdfunding contract can be found [here (GitHub link)](https://github.com/AztecProtocol/aztec-packages/blob/#include_aztec_version/noir-projects/noir-contracts/contracts/app/crowdfunding_contract).
 
 If a new token wishes to honour donors with free tokens based on donation amounts, this is possible via the donation_receipts (a `PrivateSet`).
-See [claim_contract (GitHub link)](https://github.com/AztecProtocol/aztec-packages/blob/#include_aztec_version/noir-projects/noir-contracts/contracts/claim_contract).
+See [claim_contract (GitHub link)](https://github.com/AztecProtocol/aztec-packages/tree/v1.2.0/noir-projects/noir-contracts/contracts/app/claim_contract).
 
 ## Next steps
 
